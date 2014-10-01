@@ -3,3 +3,6 @@ bin
 .project
 .classpath
 .gradle
+target
+.DS_Store
+build
