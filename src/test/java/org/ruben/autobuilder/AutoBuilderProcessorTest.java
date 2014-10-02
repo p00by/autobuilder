@@ -18,7 +18,10 @@ public class AutoBuilderProcessorTest {
 			.that(JavaFileObjects.forResource("good/HelloWorld.java"))
 			.processedWith(new AutoBuilderProcessor())
 			.compilesWithoutError()
-			.and().generatesSources(JavaFileObjects.forSourceString("test.HelloWorldBuilder", "final class HelloWorldBuilder {}"));
+			.and().generatesSources(JavaFileObjects.forSourceString("good.HelloWorldBuilder", 
+				"package good;\n" +
+				"\n" +
+				"final class HelloWorldBuilder {}"));
 	}
 	
 }
