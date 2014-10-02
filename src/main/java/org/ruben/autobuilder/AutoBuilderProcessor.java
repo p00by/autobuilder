@@ -21,7 +21,7 @@ public class AutoBuilderProcessor extends AbstractProcessor {
 	@Override
 	public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 		try {
-			Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(AutoBuilded.class);
+			Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(AutoBuild.class);
 			for (Element element: elements) {
 				
 				String builderName = element.getSimpleName() + "Builder";
@@ -39,7 +39,7 @@ public class AutoBuilderProcessor extends AbstractProcessor {
 
 	@Override
 	public Set<String> getSupportedAnnotationTypes() {
-		return Sets.newHashSet(AutoBuilded.class.getName());
+		return Sets.newHashSet(AutoBuild.class.getName());
 	}
 
 	@Override
