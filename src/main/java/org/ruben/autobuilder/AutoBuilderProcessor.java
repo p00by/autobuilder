@@ -41,7 +41,7 @@ public class AutoBuilderProcessor extends AbstractProcessor {
 		JavaFileObject sourceFile = processingEnv.getFiler()
 				.createSourceFile(packageName + "." + builderName);
 		try (Writer writer = sourceFile.openWriter();
-			 JavaWriter javaWriter = new JavaWriter(writer)) {
+			JavaWriter javaWriter = new JavaWriter(writer)) {
 			
 			javaWriter.emitPackage(packageName)
 				.emitEmptyLine()
