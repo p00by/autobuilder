@@ -68,21 +68,6 @@ public class TypeHelperTest {
 			.compilesWithoutError();
 	}
 	
-	@Test
-	public void testNoStaticMethods() {
-		assertWithTestClassBody(
-				"public static String testMethod() { return null; }")
-			.processedWith(new TestClassAssertingProcessor() {
-				@Override
-				public void runAssertions(List<ExecutableElement> executableElements) {
-					Assert.assertTrue(
-						executableElements.isEmpty()
-					);
-				}
-			})
-			.compilesWithoutError();
-	}
-	
 	private boolean containsMethod(List<ExecutableElement> executableElements, final String methodName) {
 		return Iterables.tryFind(executableElements, new Predicate<ExecutableElement>() {
 			@Override
