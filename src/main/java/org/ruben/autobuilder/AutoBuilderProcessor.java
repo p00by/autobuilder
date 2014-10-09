@@ -2,6 +2,7 @@ package org.ruben.autobuilder;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -19,9 +20,11 @@ import javax.tools.JavaFileObject;
 import org.ruben.autobuilder.util.StringUtil;
 
 import com.google.auto.service.AutoService;
+import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.squareup.javawriter.JavaWriter;
 
@@ -46,7 +49,7 @@ public class AutoBuilderProcessor extends AbstractProcessor {
 		
 		String builderName = element.getSimpleName() + "Builder";
 		JavaFileObject sourceFile = processingEnv.getFiler()
-				.createSourceFile(packageName + "." + builderName);
+				.createSourceFile(packageName + "." + builderName, element);
 		try (Writer writer = sourceFile.openWriter();
 			JavaWriter javaWriter = new JavaWriter(writer)) {
 			
@@ -58,6 +61,8 @@ public class AutoBuilderProcessor extends AbstractProcessor {
 			
 			createProperties(methods, javaWriter, builderName);
 			createFluentMethods(methods, javaWriter, builderName);
+			createBuildMethod(methods, javaWriter, element.getSimpleName().toString());
+			createValueType(methods, javaWriter, element.getSimpleName().toString());
 			
 			javaWriter.endType();
 		}
@@ -89,6 +94,69 @@ public class AutoBuilderProcessor extends AbstractProcessor {
 			
 			javaWriter.endMethod();
 		}
+	}
+
+	private void createBuildMethod(Iterable<ExecutableElement> methods, JavaWriter javaWriter, String valueType) throws IOException {
+		javaWriter.beginMethod(valueType, "build", EnumSet.of(Modifier.PUBLIC));
+		
+		List<String> constructorParams = Lists.newArrayList();
+		for (ExecutableElement method: methods) {
+			String propertyName = guessPropertyName(method);
+			constructorParams.add(propertyName);
+		}
+		
+		javaWriter.emitStatement("return new %s_Value(" + Joiner.on(", ").join(constructorParams) + ")", valueType);
+		
+		javaWriter.endMethod();
+	}
+
+
+	private void createValueType(Iterable<ExecutableElement> methods,
+			JavaWriter javaWriter, String valueType) throws IOException {
+		javaWriter.beginType(
+			valueType + "_Value", 
+			"class", 
+			EnumSet.of(Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL), 
+			valueType);
+		
+		List<String> constructorParams = Lists.newArrayList();		
+		
+		for (ExecutableElement method: methods) {
+			String propertyName = guessPropertyName(method);
+			String returnType = method.getReturnType().toString();
+			constructorParams.add(returnType);
+			constructorParams.add(propertyName);
+		}
+		
+		for (ExecutableElement method: methods) {
+			String propertyName = guessPropertyName(method);
+			String returnType = method.getReturnType().toString();
+			
+			javaWriter.emitField(returnType, 
+				propertyName, 
+				EnumSet.of(Modifier.PRIVATE, Modifier.FINAL));
+		}
+
+		javaWriter.beginConstructor(EnumSet.of(Modifier.PUBLIC), constructorParams, new ArrayList<String>());
+		for (ExecutableElement method: methods) {
+			constructorParams.add(method.getReturnType().toString());
+			String propertyName = guessPropertyName(method);
+			javaWriter.emitStatement("this.%s = %s", propertyName, propertyName);
+		}
+		javaWriter.endConstructor();
+
+		for (ExecutableElement method: methods) {
+			String propertyName = guessPropertyName(method);
+			String returnType = method.getReturnType().toString();
+			
+			
+			javaWriter
+				.beginMethod(returnType, method.getSimpleName().toString(), EnumSet.of(Modifier.PUBLIC))
+				.emitStatement("return %s", propertyName)
+				.endMethod();
+		}
+
+		javaWriter.endType();
 	}
 
 	private String guessPropertyName(ExecutableElement method) {
