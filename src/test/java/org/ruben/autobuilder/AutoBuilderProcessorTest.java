@@ -34,21 +34,12 @@ public class AutoBuilderProcessorTest {
 	
 	@Test
 	public void compilesSimpleExampleWithoutGet() {
-		testSimpleExample("withoutget");
-	}
-//TODO renable this
-//	@Test
-//	public void compilesSimpleExampleWithGet() {
-//		testSimpleExample("withget");
-//	}
-
-	private void testSimpleExample(String packageName) {
 		ASSERT.about(javaSource())
-			.that(JavaFileObjects.forResource("good/" + packageName + "/SimpleExample.java"))
+			.that(JavaFileObjects.forResource("good/withoutget/SimpleExample.java"))
 			.processedWith(new AutoBuilderProcessor())
 			.compilesWithoutError()
-			.and().generatesSources(JavaFileObjects.forSourceLines("good." + packageName + ".SimpleExampleBuilder", 
-				"package good. " + packageName + ";",
+			.and().generatesSources(JavaFileObjects.forSourceLines("good.withoutget.SimpleExampleBuilder", 
+				"package good.withoutget;",
 				"",
 				"final class SimpleExampleBuilder {",
 				"",
@@ -84,6 +75,55 @@ public class AutoBuilderProcessorTest {
 				"		}",
 				"",
 				"		public String bar() {",
+				"			return bar;",
+				"		}",
+				"	}",
+				"}"));
+	}
+	
+	@Test
+	public void compilesSimpleExampleWithGet() {
+		ASSERT.about(javaSource())
+			.that(JavaFileObjects.forResource("good/withget/SimpleExample.java"))
+			.processedWith(new AutoBuilderProcessor())
+			.compilesWithoutError()
+			.and().generatesSources(JavaFileObjects.forSourceLines("good.withget.SimpleExampleBuilder", 
+				"package good.withget;",
+				"",
+				"final class SimpleExampleBuilder {",
+				"",
+				"	private String foo;",
+				"	private String bar;",
+				"",
+				"	public SimpleExampleBuilder withFoo(String foo){",
+				"		this.foo = foo;",
+				"		return this;",
+				"	}",
+				"",
+				"	public SimpleExampleBuilder withBar(String bar){",
+				"		this.bar = bar;",
+				"		 return this;",
+				"	}",
+				"",
+				"	public SimpleExample build() {",
+				"		return new SimpleExample_Value(foo, bar)",
+				"	}",
+				"",
+				"	private static final class SimpleExample_Value extends SimpleExample {",
+				"",
+				"		private final String foo;",
+				"		private final String bar;",	
+				"",
+				"		public SimpleExample_Value(String foo, String bar){ " ,
+				"			this.foo = foo;",
+				"			this.bar = bar;",
+				"		}",
+				"",
+				"		public String getFoo() {",
+				"			return foo;",
+				"		}",
+				"",
+				"		public String getBar() {",
 				"			return bar;",
 				"		}",
 				"	}",
