@@ -15,6 +15,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.PrimitiveType;
 import javax.tools.JavaFileObject;
 
 import org.ruben.autobuilder.util.StringUtil;
@@ -82,9 +83,10 @@ public class AutoBuilderProcessor extends AbstractProcessor {
 	private void createFluentMethods(Iterable<ExecutableElement> methods, JavaWriter javaWriter, String builderName) throws IOException {
 		for (ExecutableElement method: methods) {
 			String propertyName = guessPropertyName(method);
-					
+			String verb = hasBooleanReturnType(method) ? "as" : "with";
+			
 			javaWriter.beginMethod(builderName, 
-				"with" + StringUtil.upperCaseFirst(propertyName), 
+				verb + StringUtil.upperCaseFirst(propertyName), 
 				EnumSet.of(Modifier.PUBLIC), 
 				method.getReturnType().toString(),
 				propertyName);
@@ -94,6 +96,10 @@ public class AutoBuilderProcessor extends AbstractProcessor {
 			
 			javaWriter.endMethod();
 		}
+	}
+	
+	private boolean hasBooleanReturnType(ExecutableElement executableElement) {
+		return executableElement.getReturnType() instanceof PrimitiveType && "boolean".equals(executableElement.getReturnType().toString());
 	}
 
 	private void createBuildMethod(Iterable<ExecutableElement> methods, JavaWriter javaWriter, String valueType) throws IOException {

@@ -130,4 +130,50 @@ public class AutoBuilderProcessorTest {
 				"}"));
 	}
 	
+	@Test
+	public void compileSimpleBooleanExample() {
+		ASSERT.about(javaSource())
+			.that(JavaFileObjects.forSourceLines("good/SimpleExampleBoolean.java",
+				"package good;",
+				"",
+				"import org.ruben.autobuilder.AutoBuild;",
+				"",
+				"@AutoBuild",
+				"abstract class SimpleExampleBoolean { ",
+				"	public abstract boolean gleeb();",	
+				"}"
+			))
+			.processedWith(new AutoBuilderProcessor())
+			.compilesWithoutError()
+			.and().generatesSources(JavaFileObjects.forSourceLines("good.SimpleExampleBooleanBuilder", 
+				"package good;",
+				"",
+				"final class SimpleExampleBooleanBuilder {",
+				"",
+				"	private boolean gleeb;",
+				"",
+				"	public SimpleExampleBooleanBuilder asGleeb(boolean gleeb){",
+				"		this.gleeb = gleeb;",
+				"		return this;",
+				"	}",
+				"",
+				"	public SimpleExampleBoolean build() {",
+				"		return new SimpleExampleBoolean_Value(gleeb)",
+				"	}",
+				"",
+				"	private static final class SimpleExampleBoolean_Value extends SimpleExampleBoolean {",
+				"",
+				"		private final boolean gleeb;",
+				"",
+				"		public SimpleExampleBoolean_Value(boolean gleeb){ " ,
+				"			this.gleeb = gleeb;",
+				"		}",
+				"",
+				"		public boolean gleeb() {",
+				"			return gleeb;",
+				"		}",
+				"	}",
+				"}"));
+	}
+	
 }
